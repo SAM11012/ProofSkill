@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { ChevronLeft, Users, Info } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -13,6 +13,13 @@ import {
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Header } from "./components/header/Header";
 import { Checkbox } from "@radix-ui/react-checkbox";
+import LeftBar from "./components/leftBar/LeftBar";
+import { getDataID } from "./components/leftBar/helper";
+import { RadioButton } from "primereact/radiobutton";
+import "./App.css";
+import Tooltip from "@mui/material/Tooltip";
+import { Radio } from "@mui/material";
+import { red } from "@mui/material/colors";
 
 const skills = [
   "Experience",
@@ -41,130 +48,88 @@ const skills = [
 ];
 
 // Generate some sample candidate data
-const candidates = Array.from({ length: 16 }, (_, i) => ({
-  id: i + 1,
-  name: `Abhishek trivedi`,
-  scores: skills.map(() => Math.floor(Math.random() * 3)), // 0 = low, 1 = medium, 2 = high
-}));
 
 function App() {
-  const [view, setView] = useState("compare");
-  const [selectedTab, setSelectedTab] = useState("recommended");
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [data, setData] = useState<any>();
+  const [candidates, setCandidates] = useState<any[]>([]);
+  const [isChecked, setChecked] = useState<string>("");
+  console.log(candidates, "candidates");
+  // ... existing code ...
+  // ... existing code ...
+  function flattenObject(obj: any, prefix = ""): Record<string, any> {
+    return Object.entries(obj).reduce(
+      (acc: Record<string, any>, [key, value]) => {
+        const newKey = prefix ? `${prefix}.${key}` : key;
+
+        if (
+          typeof value === "object" &&
+          value !== null &&
+          !Array.isArray(value)
+        ) {
+          Object.assign(acc, flattenObject(value, newKey));
+        } else {
+          acc[newKey] = value;
+        }
+
+        return acc;
+      },
+      {} as Record<string, any>
+    );
+  }
+  // ... existing code ...
+
+  const fetchData = useCallback(
+    async (id: string) => {
+      try {
+        const peopleData = await getDataID(id); // Pass the id to fetch data
+        console.log("peopleData", peopleData);
+
+        const val = flattenObject(peopleData);
+        console.log("Flattened Data:", val);
+
+        const result: any[] = [];
+        result.push({
+          Experience:
+            val["data.data.experience_level"] !== ""
+              ? val["data.data.experience_level"]
+              : 0,
+        });
+
+        if (val["data.data.skillset"]) {
+          val["data.data.skillset"].forEach((item: any) => {
+            if (item.skills) {
+              item.skills.forEach((skill: any) => {
+                result.push({
+                  [skill.name]: skill.pos?.[0]?.consensus_score || 0,
+                });
+              });
+            }
+          });
+        }
+        console.log(result, "the result is");
+
+        setData(result);
+
+        const candidatesData = {
+          id: val.id,
+          name: `${val.name}`,
+          scores: skills.map((item: any) =>
+            result[item] !== undefined
+              ? result[item]
+              : Math.floor(Math.random() * 3)
+          ),
+        };
+
+        setCandidates((prevCandidates) => [...prevCandidates, candidatesData]);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
+    },
+    [setData, setCandidates, skills]
+  );
 
   return (
-    // <div className="min-h-screen bg-background flex">
-    //   {/* Left Sidebar */}
-    //   <div className="w-[300px] border-r flex flex-col">
-    //     <div className="border-b">
-    //       <Tabs value={selectedTab} onValueChange={setSelectedTab}>
-    //         <TabsList className="w-full rounded-none">
-    //           <TabsTrigger
-    //             value="recommended"
-    //             className="w-full"
-    //           >
-    //             Most recommended
-    //           </TabsTrigger>
-    //         </TabsList>
-    //       </Tabs>
-    //     </div>
-    //     <div className="p-4 text-sm text-muted-foreground flex items-center gap-2">
-    //       <Info className="h-4 w-4" />
-    //       <p>Recommendations are based on your skill requirements and candidate's performance.</p>
-    //     </div>
-    //     <div className="flex-1 overflow-auto">
-    //       {candidates.slice(0, 5).map((candidate) => (
-    //         <div key={candidate.id} className="p-4 border-b hover:bg-accent cursor-pointer flex items-center gap-3">
-    //           <Avatar className="h-8 w-8">
-    //             <AvatarFallback>{candidate.name.charAt(0)}</AvatarFallback>
-    //           </Avatar>
-    //           <div className="flex-1">
-    //             <div className="font-medium">{candidate.name}</div>
-    //             <Button variant="link" size="sm" className="h-auto p-0 text-muted-foreground">
-    //               <Info className="h-3 w-3 mr-1" />
-    //               View details
-    //             </Button>
-    //           </div>
-    //         </div>
-    //       ))}
-    //     </div>
-    //   </div>
-
-    //   {/* Main Content */}
-    //   <div className="flex-1">
-    //     <header className="border-b">
-    //       <div className="container mx-auto px-4 py-4">
-    //         <div className="flex items-center gap-4">
-    //           <Button variant="ghost" size="icon">
-    //             <ChevronLeft className="h-4 w-4" />
-    //           </Button>
-    //           <div>
-    //             <h1 className="text-xl font-semibold">Posk_UXdesigner_sr001</h1>
-    //             <div className="flex items-center gap-2 text-sm text-muted-foreground">
-    //               <Users className="h-4 w-4" />
-    //               <span>23 Candidates</span>
-    //             </div>
-    //           </div>
-    //         </div>
-    //       </div>
-    //     </header>
-
-    //     <main className="container mx-auto px-4 py-6">
-    //       <div className="flex justify-between items-center mb-6">
-    //         <Tabs value={view} onValueChange={setView} className="w-[400px]">
-    //           <TabsList className="grid w-full grid-cols-3">
-    //             <TabsTrigger value="compare">Compare View</TabsTrigger>
-    //             <TabsTrigger value="individual">Individual view</TabsTrigger>
-    //             <TabsTrigger value="shortlisted">Shortlisted</TabsTrigger>
-    //           </TabsList>
-    //         </Tabs>
-
-    //         <div className="flex gap-2">
-    //           <Button variant="outline" size="icon">
-    //             <ChevronLeft className="h-4 w-4" />
-    //           </Button>
-    //           <Button variant="outline" size="icon">
-    //             <ChevronLeft className="h-4 w-4 rotate-180" />
-    //           </Button>
-    //         </div>
-    //       </div>
-
-    //       <div className="border rounded-lg">
-    //         <Table>
-    //           <TableHeader>
-    //             <TableRow>
-    //               <TableHead className="w-[250px]">Skills</TableHead>
-    //               {candidates.map((candidate) => (
-    //                 <TableHead key={candidate.id} className="text-center w-[50px]">
-    //                   {candidate.id}
-    //                 </TableHead>
-    //               ))}
-    //             </TableRow>
-    //           </TableHeader>
-    //           <TableBody>
-    //             {skills.map((skill, skillIndex) => (
-    //               <TableRow key={skill}>
-    //                 <TableCell className="font-medium">{skill}</TableCell>
-    //                 {candidates.map((candidate) => (
-    //                   <TableCell key={`${candidate.id}-${skill}`} className="p-0">
-    //                     <div
-    //                       className={`w-full h-12 ${
-    //                         candidate.scores[skillIndex] === 0
-    //                           ? 'bg-yellow-100'
-    //                           : candidate.scores[skillIndex] === 1
-    //                           ? 'bg-green-100'
-    //                           : 'bg-green-500'
-    //                       }`}
-    //                     />
-    //                   </TableCell>
-    //                 ))}
-    //               </TableRow>
-    //             ))}
-    //           </TableBody>
-    //         </Table>
-    //       </div>
-    //     </main>
-    //   </div>
-    // </div>
     <>
       {" "}
       <div className="p-4 mx-32">
@@ -184,34 +149,37 @@ function App() {
       {/* below component code start */}
       <div className="flex">
         {/* Left Section: Recommended Candidates (25% width) */}
-        <div style={{width:'22%'}} className="w-1/4 mr-4 border-[2px] border-black">
-          <div style={{borderWidth:'0px'}} className="border rounded-lg max-h-[40rem] overflow-y-scroll">
-            <div  className="sticky top-0 flex  border-b-[2px] border-black justify-center bg-white "> <h2 style={{padding:'1.2rem'}} className="text-xl font-semibold mb-0 sticky top-0 bg-white z-10 border-b-2 pb-2">
-             Most Recommended 
-            </h2></div>
-           
-            <ul className="space-y-2">
-              {candidates.map((candidate) => (
-                <li
-                  key={candidate.id}
-                  className="flex items-center gap-2 p-2 border-b"
+        <LeftBar
+          handleClick={(id: string) => {
+            if (!selectedIds.includes(id)) {
+              fetchData(id);
+              setSelectedIds([...selectedIds, id]);
+            }
+          }}
+        />
+        <div style={{ width: "70%" }}>
+          <Header />
+          <div className="border rounded-lg border-transparent">
+            <Table style={{ width: "unset" }}>
+              <TableHeader>
+                <TableRow
+                  style={{ borderColor: "transparent", minHeight: "1.9rem" }}
                 >
-                  <span className="font-medium">{candidate.name}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
-        </div>
-        <div style={{width:'%'}}>
-         <Header/>
-      <div className="border rounded-lg border-transparent">
-           <Table>
-            <TableHeader>
-            <TableRow style={{borderColor:'transparent'}}>
-               <TableHead  className="w-[250px]"></TableHead>
+                  <TableHead className="w-[250px]"></TableHead>
                   {candidates.map((candidate) => (
-                    <TableHead   key={candidate.id} className="text-center w-[50px] border-transparent">
-                      <Checkbox/>
+                    <TableHead
+                      key={candidate.id}
+                      className="text-center w-[50px] border-transparent"
+                    >
+                      {candidate.name.split(" ")[0][0] +
+                        candidate.name.split(" ")[1][0]}
+                      <Radio
+                        checked={isChecked === candidate.id}
+                        onChange={() => {
+                          setChecked(candidate.id);
+                        }}
+                        name="radio-buttons"
+                      />
                     </TableHead>
                   ))}
                 </TableRow>
@@ -219,20 +187,59 @@ function App() {
               <TableBody>
                 {skills.map((skill, skillIndex) => (
                   <TableRow key={skill} className="border-transparent">
-                    <TableCell className="font-medium p-0">{skill}</TableCell>
+                    <TableCell
+                      className="font-medium p-0 "
+                      style={{ height: "1.9rem" }}
+                    >
+                      {skill}
+                    </TableCell>
                     {candidates.map((candidate) => (
-                      <TableCell key={`${candidate.id}-${skill}`} className="p-0">
-                        <div
-                        style={{width:'100%',height:'1.9rem',borderTop:'2px solid white',borderBottom:'2px solid white',borderRight :' 4px solid white',borderLeft :' 5px solid white'}}
-                          className={` ${
-                            candidate.scores[skillIndex] === 0
-                              ? 'bg-yellow-100'
-                              : candidate.scores[skillIndex] === 1
-                              ? 'bg-green-100'
-                              : 'bg-green-500'
-                          }`}
-                        />
-                      </TableCell>
+                      <Tooltip title={candidate.scores[skillIndex]}>
+                        <TableCell
+                          key={`${candidate.id}-${skill}`}
+                          className="p-0"
+                        >
+                          <div
+                            style={{
+                              width: "100%",
+                              height: "1.9rem",
+                              borderTop: "2px solid white",
+                              borderBottom: "2px solid white",
+                              borderRight: " 4px solid white",
+                              borderLeft: " 5px solid white",
+                              display: "flex",
+                              justifyContent: "center",
+                              alignItems: "center",
+                            }}
+                            className={` ${
+                              isChecked !== candidate.id && isChecked != ""
+                                ? "bg-slate-200"
+                                : skill == "Experience"
+                                ? "bg-green-200"
+                                : skill == "Minimum salary expected" ||
+                                  skill == "Can join in"
+                                ? "bg-red-200"
+                                : candidate.scores[skillIndex] === 0
+                                ? "bg-yellow-100"
+                                : candidate.scores[skillIndex] === 1
+                                ? "bg-green-100"
+                                : candidate.scores[skillIndex] === 2
+                                ? "bg-green-400"
+                                : candidate.scores[skillIndex] === 3
+                                ? "bg-green-600"
+                                : "bg-green-800"
+                            }`}
+                          >
+                            {[
+                              "Experience",
+                              "Can join in",
+                              "Minimum salary expected",
+                            ].includes(skill)
+                              ? candidate.scores[skillIndex]
+                              : ""}
+                          </div>
+                        </TableCell>
+                      </Tooltip>
                     ))}
                   </TableRow>
                 ))}

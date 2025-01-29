@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight,MoveLeft,MoveRight } from "lucide-react";
 import './Header.css'
 export const Header = () => {
   const [activeTab, setActiveTab] = useState("compare");
@@ -8,7 +8,7 @@ export const Header = () => {
     <div className="">
       <div style={{borderBottom:'1px solid black'}} className="max-w-[1200px] mx-auto rounded-lg ">
         {/* Header */}
-        <div className=" flex items-center justify-between">
+        <div className=" flex items-center justify-between relative">
           <div className="flex">
             <button 
            
@@ -42,12 +42,12 @@ export const Header = () => {
               Shortlisted candidates
             </button>
           </div>
-          <div className="flex border-l">
-            <button className="p-2 hover:bg-gray-100 border-r">
-              <ChevronLeft size={20} className="text-gray-600" />
+          <div className="flex border-l absolute gap-2" style={{right:50,bottom:'10px'}}>
+            <button className="p-2 hover:bg-gray-100 border-r" style={{border:'1px solid black',boxShadow: '2px 2px 0px 0px black'}}>
+              <MoveLeft size={20} className="text-gray-600" />
             </button>
-            <button className="p-2 hover:bg-gray-100">
-              <ChevronRight size={20} className="text-gray-600" />
+            <button className="p-2 hover:bg-gray-100" style={{border:'1px solid black',boxShadow: '2px 2px 0px 0px black'}}>
+              <MoveRight size={20} className="text-gray-600" />
             </button>
           </div>
         </div>
