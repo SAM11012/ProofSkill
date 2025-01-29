@@ -1,7 +1,5 @@
-import { useCallback, useEffect, useState } from "react";
-import { ChevronLeft, Users, Info } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useCallback, useState } from "react";
+
 import {
   Table,
   TableBody,
@@ -10,16 +8,12 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Header } from "./components/header/Header";
-import { Checkbox } from "@radix-ui/react-checkbox";
 import LeftBar from "./components/leftBar/LeftBar";
 import { getDataID } from "./components/leftBar/helper";
-import { RadioButton } from "primereact/radiobutton";
 import "./App.css";
 import Tooltip from "@mui/material/Tooltip";
 import { Radio } from "@mui/material";
-import { red } from "@mui/material/colors";
 
 const skills = [
   "Experience",
@@ -54,9 +48,7 @@ function App() {
   const [data, setData] = useState<any>();
   const [candidates, setCandidates] = useState<any[]>([]);
   const [isChecked, setChecked] = useState<string>("");
-  console.log(candidates, "candidates");
-  // ... existing code ...
-  // ... existing code ...
+
   function flattenObject(obj: any, prefix = ""): Record<string, any> {
     return Object.entries(obj).reduce(
       (acc: Record<string, any>, [key, value]) => {
@@ -77,7 +69,6 @@ function App() {
       {} as Record<string, any>
     );
   }
-  // ... existing code ...
 
   const fetchData = useCallback(
     async (id: string) => {
@@ -146,9 +137,8 @@ function App() {
           <span className="text-xl text-gray-500">23 Candidates</span>
         </div>
       </div>
-      {/* below component code start */}
       <div className="flex">
-        {/* Left Section: Recommended Candidates (25% width) */}
+        {/* Left Section: Recommended Candidates  */}
         <LeftBar
           handleClick={(id: string) => {
             if (!selectedIds.includes(id)) {
@@ -157,6 +147,7 @@ function App() {
             }
           }}
         />
+        {/* Right Heat Map */}
         <div style={{ width: "70%" }}>
           <Header />
           <div className="border rounded-lg border-transparent">
@@ -200,18 +191,7 @@ function App() {
                           className="p-0"
                         >
                           <div
-                            style={{
-                              width: "100%",
-                              height: "1.9rem",
-                              borderTop: "2px solid white",
-                              borderBottom: "2px solid white",
-                              borderRight: " 4px solid white",
-                              borderLeft: " 5px solid white",
-                              display: "flex",
-                              justifyContent: "center",
-                              alignItems: "center",
-                            }}
-                            className={` ${
+                            className={`custom-cell ${
                               isChecked !== candidate.id && isChecked != ""
                                 ? "bg-slate-200"
                                 : skill == "Experience"

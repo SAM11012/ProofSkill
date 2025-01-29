@@ -2,3 +2,15 @@
     border:1px solid black;
     border-bottom: 0px solid black;
 }
+
+.buttonContainer{
+    right: 50px;
+    bottom: 10px;
+}
+.arrow_button{
+    border: 1px solid black;
+    box-shadow: 2px 2px 0px 0px black;
+}
+.headerContainer{
+    border-bottom: 1px solid black;
+}
