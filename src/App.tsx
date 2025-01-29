@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/table";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Header } from "./components/header/Header";
+import { Checkbox } from "@radix-ui/react-checkbox";
 
 const skills = [
   "Experience",
@@ -201,8 +202,43 @@ function App() {
             </ul>
           </div>
         </div>
-        <div style={{width:'70%'}}>
+        <div style={{width:'%'}}>
          <Header/>
+      <div className="border rounded-lg border-transparent">
+           <Table>
+            <TableHeader>
+            <TableRow style={{borderColor:'transparent'}}>
+               <TableHead  className="w-[250px]"></TableHead>
+                  {candidates.map((candidate) => (
+                    <TableHead   key={candidate.id} className="text-center w-[50px] border-transparent">
+                      <Checkbox/>
+                    </TableHead>
+                  ))}
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {skills.map((skill, skillIndex) => (
+                  <TableRow key={skill} className="border-transparent">
+                    <TableCell className="font-medium p-0">{skill}</TableCell>
+                    {candidates.map((candidate) => (
+                      <TableCell key={`${candidate.id}-${skill}`} className="p-0">
+                        <div
+                        style={{width:'100%',height:'1.9rem',borderTop:'2px solid white',borderBottom:'2px solid white',borderRight :' 4px solid white',borderLeft :' 5px solid white'}}
+                          className={` ${
+                            candidate.scores[skillIndex] === 0
+                              ? 'bg-yellow-100'
+                              : candidate.scores[skillIndex] === 1
+                              ? 'bg-green-100'
+                              : 'bg-green-500'
+                          }`}
+                        />
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
         </div>
       </div>
     </>
